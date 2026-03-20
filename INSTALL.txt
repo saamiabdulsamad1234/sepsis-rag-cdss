@@ -1,0 +1,153 @@
+INSTALLATION AND SETUP GUIDE
+
+STEP 1: EXTRACT THE ZIP FILE
+Unzip sepsis_rag_v2_FINAL.zip to your desired location
+
+STEP 2: ADD YOUR OPENAI API KEY
+Navigate to the project folder:
+cd sepsis_rag_v2_FINAL
+
+Create .env file:
+cp .env.template .env
+
+Edit .env file and add your API key:
+OPENAI_API_KEY=sk-your-actual-api-key-here
+MODEL_NAME=gpt-4-turbo-preview
+EMBEDDING_MODEL=text-embedding-3-small
+TEMPERATURE=0.3
+
+STEP 3: INSTALL DEPENDENCIES
+pip install -r requirements.txt
+
+STEP 4: INDEX THE CLINICAL GUIDELINES
+python scripts/index_documents.py
+
+This will create the vector database with Surviving Sepsis Campaign guidelines.
+Wait for "Indexing completed successfully" message.
+
+STEP 5: START THE SYSTEM
+
+Option A - Use startup script (Linux/Mac):
+chmod +x start.sh
+./start.sh
+
+Option B - Manual start:
+Terminal 1 - Start backend:
+cd backend
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+Terminal 2 - Start frontend:
+streamlit run frontend/app.py
+
+STEP 6: ACCESS THE SYSTEM
+Open browser and go to:
+http://localhost:8501
+
+STEP 7: LOAD DEMO PATIENTS
+Click "Load Demo Patient" in the sidebar
+Generate analysis and test the chat
+
+DO YOU NEED TO RUN JUPYTER NOTEBOOK?
+NO - The system works standalone with demo patients.
+
+YES - Only if you want to use YOUR MIMIC data instead of demo patients.
+
+TO USE YOUR MIMIC DATA:
+1. Keep the RAG system running
+2. Open your Jupyter notebook
+3. Add this code at the end of your notebook:
+
+import sys
+sys.path.append('../sepsis_rag_v2_FINAL/scripts')
+from mimic_integration import MIMICToRAGConverter
+import pandas as pd
+
+converter = MIMICToRAGConverter(output_dir='../sepsis_rag_v2_FINAL/data/mimic_patients')
+
+vitals_df = pd.DataFrame({
+    'heart_rate': [your_hr_value],
+    'sbp': [your_sbp_value],
+    'dbp': [your_dbp_value],
+    'map': [your_map_value],
+    'resp_rate': [your_rr_value],
+    'temperature': [your_temp_value],
+    'spo2': [your_spo2_value]
+})
+
+labs_df = pd.DataFrame({
+    'wbc': [your_wbc_value],
+    'platelet': [your_platelet_value],
+    'creatinine': [your_creat_value],
+    'bilirubin': [your_bili_value],
+    'lactate': [your_lactate_value],
+    'procalcitonin': [your_pct_value],
+    'crp': [your_crp_value]
+})
+
+patient_data = converter.convert_patient(
+    patient_id=f"MIMIC-{your_subject_id}",
+    vitals_df=vitals_df,
+    labs_df=labs_df,
+    sofa_components={
+        'respiration': your_sofa_resp,
+        'coagulation': your_sofa_coag,
+        'liver': your_sofa_liver,
+        'cardiovascular': your_sofa_cardio,
+        'cns': your_sofa_cns,
+        'renal': your_sofa_renal
+    },
+    model_prediction={
+        'probability': your_model_prediction_probability,
+        'risk_level': your_risk_level,
+        'confidence': your_confidence_score,
+        'feature_importance': your_feature_importance_dict
+    },
+    demographics={
+        'age': your_patient_age,
+        'gender': your_patient_gender
+    }
+)
+
+converter.save_patient(patient_data)
+
+4. Your MIMIC patient will appear in the RAG UI
+5. Refresh the browser and load your patient
+
+TROUBLESHOOTING:
+
+Error: "Module not found: openai"
+Solution: pip install -r requirements.txt
+
+Error: "OPENAI_API_KEY not found"
+Solution: Make sure .env file exists and contains your API key
+
+Error: "Backend not running"
+Solution: Start backend in separate terminal: cd backend && uvicorn main:app --reload
+
+Error: "No documents indexed"
+Solution: Run python scripts/index_documents.py
+
+WHERE IS THE API KEY USED?
+The OpenAI API key is used by the RAG engine to:
+1. Create embeddings for clinical guidelines (one-time during indexing)
+2. Generate embeddings for patient queries (during retrieval)
+3. Call GPT-4 to generate clinical analysis and chat responses
+
+COST ESTIMATE:
+Indexing guidelines (one-time): $0.01
+Per patient analysis: $0.06
+Per chat message: $0.04
+Total for 10 patients with 5 questions each: ~$2.60
+
+QUICK START SUMMARY:
+1. Extract ZIP
+2. cd sepsis_rag_v2_FINAL
+3. cp .env.template .env
+4. Edit .env with your OPENAI_API_KEY
+5. pip install -r requirements.txt
+6. python scripts/index_documents.py
+7. ./start.sh
+8. Open http://localhost:8501
+9. Load demo patient and test
+
+NO JUPYTER NOTEBOOK NEEDED FOR DEMO

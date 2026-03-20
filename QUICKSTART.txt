@@ -1,0 +1,60 @@
+QUICK START GUIDE
+
+MINIMUM SETUP (5 STEPS):
+
+1. Extract ZIP file
+   unzip sepsis_rag_v2_FINAL.zip
+   cd sepsis_rag_v2_FINAL
+
+2. Add API key
+   cp .env.template .env
+   Edit .env file:
+   OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxxxxxxx
+
+3. Install
+   pip install -r requirements.txt
+
+4. Index guidelines
+   python scripts/index_documents.py
+
+5. Run
+   chmod +x start.sh
+   ./start.sh
+
+   OR manually:
+   Terminal 1: cd backend && uvicorn main:app --reload
+   Terminal 2: streamlit run frontend/app.py
+
+6. Open browser
+   http://localhost:8501
+
+7. Test
+   Click "Load Demo Patient"
+   Click "Generate Clinical Analysis"
+
+ANSWER TO YOUR QUESTIONS:
+
+Q: Where do I put API key?
+A: In .env file in project root folder
+   Format: OPENAI_API_KEY=sk-proj-your-key-here
+
+Q: Do I need Jupyter notebook?
+A: NO for demo
+   YES only if you want to use your own MIMIC data
+
+Q: How to run?
+A: ./start.sh (opens everything)
+   OR run backend and frontend separately
+
+DEMO WITHOUT JUPYTER:
+- System has 3 built-in demo patients
+- Just load and analyze
+- No notebook needed
+
+WITH YOUR MIMIC DATA:
+1. Start RAG system first
+2. Then run your Jupyter notebook
+3. Export patient using provided code
+4. Patient appears in RAG UI
+
+THAT'S IT.
